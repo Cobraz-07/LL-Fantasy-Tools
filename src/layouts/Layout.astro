@@ -3,6 +3,7 @@ import '../styles/global.css';
 import { Image } from 'astro:assets';
 import logo from "/src/assets/img/logo.png";
 import SpeedInsights from '@vercel/speed-insights/astro';
+import Analytics from '@vercel/analytics/astro'
 ---
 
 <!doctype html>
@@ -45,6 +46,7 @@ import SpeedInsights from '@vercel/speed-insights/astro';
 			<slot />
 		</main>
 		<SpeedInsights />
+		<Analytics/>
 		<footer>
 			
 		</footer>	
