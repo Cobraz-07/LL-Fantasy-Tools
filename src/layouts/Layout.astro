@@ -4,6 +4,7 @@ import { Image } from 'astro:assets';
 import logo from "/src/assets/img/logo.png";
 import SpeedInsights from '@vercel/speed-insights/astro';
 import Analytics from '@vercel/analytics/astro'
+import hamburger from "/src/assets/svg/hamburger.svg";
 ---
 
 <!doctype html>
@@ -32,7 +33,7 @@ import Analytics from '@vercel/analytics/astro'
 					<input id="menu-toggle" type="checkbox" class="peer hidden" />
 					<label for="menu-toggle" class="flex peer-checked:bg-neutral-700/80 rounded-[12px]">
 						<span class="sr-only">Abrir menú de navegación</span>
-						<img alt="hamburger-menu" src="/src/assets/svg/hamburger.svg" class="cursor-pointer hover:bg-neutral-700 rounded-[12px] p-1 duration-300" />
+						<Image alt="hamburger-menu" src={hamburger} class="cursor-pointer hover:bg-neutral-700 rounded-[12px] p-1 duration-300" />
 					</label>
 					<div class="absolute right-[-8px] mt-3 w-52 h-[144px] bg-transparent rounded-xl flex-col gap-2 p-4 z-50 flex opacity-0 peer-checked:opacity-100 duration-300 backdrop-blur-[10px]"></div>
 					<div  class="absolute right-0 mt-4 w-48 bg-neutral-800 rounded-xl flex-col gap-2 p-4 z-50 flex opacity-0 peer-checked:opacity-100 duration-300">
