@@ -14,18 +14,18 @@ import logo from "/src/assets/img/logo.png";
 		<title>LL Fantasy Tools</title>
 	</head>
 	<body class="w-full bg-neutral-900 roboto">
-		<header class="m-auto my-10 flex flex-row items-center justify-between bg-neutral-800 rounded-xl max-w-[1800px] shadow-lg sm:rounded-3xl max-[630px]:w-9/10">
+		<header class="m-auto my-10 flex flex-row items-center justify-between bg-neutral-800 rounded-xl max-w-[1800px] shadow-lg sm:rounded-3xl min-[780px]:mx-[10%] max-[780px]:w-9/10">
 			<div class="p-3 ml-5 text-neutral-200 flex flex-row items-center gap-6">
 				<Image src={logo} alt="LL Fantasy Tools Logo" class="h-12 w-12" loading="eager"/>
 				<h1 class="flex justify-center items-center text-xl font-medium">
 					LL Fantasy Tools
 				</h1>
 			</div>
-			<nav class="flex flex-row gap-6 m-5 text-lg max-[630px]:hidden">
+			<nav class="flex flex-row gap-6 m-5 text-lg max-[780px]:hidden">
 				<button class="cursor-pointer px-6 py-3 bg-neutral-700 text-neutral-200 rounded-lg hover:bg-neutral-700/80">Iniciar sesión</button>
 				<button class="bg-[#FF4B44] text-white px-6 py-3 rounded-lg hover:bg-[#FF4B44]/80 transition duration-200 cursor-pointer">Registrarse</button>
 			</nav>
-			<nav class="min-[630px]:hidden flex items-center justify-center m-2 mr-5">
+			<nav class="min-[780px]:hidden flex items-center justify-center m-2 mr-5">
 				<div class="relative">
 					<input id="menu-toggle" type="checkbox" class="peer hidden" />
 					<label for="menu-toggle" class="flex peer-checked:bg-neutral-700/80 rounded-[12px]">
