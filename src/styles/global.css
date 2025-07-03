@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+@import "tailwindcss";
+
+.roboto {
+    font-family: 'Roboto', sans-serif;
+}
+
+@keyframes pulse-glow {
+  0%   { box-shadow: 0 0 12px 2px #FF4B44, 0 0 24px 8px #FF4B44; opacity: 0.7; }
+  5%   { box-shadow: 0 0 12.5px 2.25px #FF4B44, 0 0 25px 8.5px #FF4B44; opacity: 0.725; }
+  10%  { box-shadow: 0 0 13px 2.5px #FF4B44, 0 0 26px 9px #FF4B44; opacity: 0.75; }
+  15%  { box-shadow: 0 0 13.5px 2.75px #FF4B44, 0 0 27px 9.5px #FF4B44; opacity: 0.775; }
+  20%  { box-shadow: 0 0 14px 3px #FF4B44, 0 0 28px 10px #FF4B44; opacity: 0.8; }
+  25%  { box-shadow: 0 0 14.5px 3.25px #FF4B44, 0 0 29px 10.5px #FF4B44; opacity: 0.825; }
+  30%  { box-shadow: 0 0 15px 3.5px #FF4B44, 0 0 30px 11px #FF4B44; opacity: 0.85; }
+  35%  { box-shadow: 0 0 15.5px 3.75px #FF4B44, 0 0 31px 11.5px #FF4B44; opacity: 0.875; }
+  40%  { box-shadow: 0 0 16px 4px #FF4B44, 0 0 32px 12px #FF4B44; opacity: 0.9; }
+  45%  { box-shadow: 0 0 16.5px 4.25px #FF4B44, 0 0 33px 12.5px #FF4B44; opacity: 0.925; }
+  50%  { box-shadow: 0 0 17px 4.5px #FF4B44, 0 0 34px 13px #FF4B44; opacity: 0.95; }
+  55%  { box-shadow: 0 0 16.5px 4.25px #FF4B44, 0 0 33px 12.5px #FF4B44; opacity: 0.925; }
+  60%  { box-shadow: 0 0 16px 4px #FF4B44, 0 0 32px 12px #FF4B44; opacity: 0.9; }
+  65%  { box-shadow: 0 0 15.5px 3.75px #FF4B44, 0 0 31px 11.5px #FF4B44; opacity: 0.875; }
+  70%  { box-shadow: 0 0 15px 3.5px #FF4B44, 0 0 30px 11px #FF4B44; opacity: 0.85; }
+  75%  { box-shadow: 0 0 14.5px 3.25px #FF4B44, 0 0 29px 10.5px #FF4B44; opacity: 0.825; }
+  80%  { box-shadow: 0 0 14px 3px #FF4B44, 0 0 28px 10px #FF4B44; opacity: 0.8; }
+  85%  { box-shadow: 0 0 13.5px 2.75px #FF4B44, 0 0 27px 9.5px #FF4B44; opacity: 0.775; }
+  90%  { box-shadow: 0 0 13px 2.5px #FF4B44, 0 0 26px 9px #FF4B44; opacity: 0.75; }
+  95%  { box-shadow: 0 0 12.5px 2.25px #FF4B44, 0 0 25px 8.5px #FF4B44; opacity: 0.725; }
+  100% { box-shadow: 0 0 12px 2px #FF4B44, 0 0 24px 8px #FF4B44; opacity: 0.7; }
+}
+

@@ -1,0 +1,48 @@
+---
+import '../styles/global.css';
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>LL Fantasy Tools</title>
+	</head>
+	<body class="w-full bg-neutral-900 roboto">
+		<header class="mt-5 mb-5 m-[10%] flex flex-row items-center justify-between bg-neutral-800 rounded-xl max-w-[1800px] shadow-lg sm:rounded-3xl sm:m-auto sm:mt-5 sm:mb-5 sm:w-4/5">
+			<div class="p-3 ml-5 text-neutral-200">
+				<h1 class="flex justify-center items-center text-xl font-medium">
+					LL Fantasy Tools
+				</h1>
+			</div>
+			<nav class="flex flex-row gap-6 m-5 text-lg max-[630px]:hidden">
+				<button class="cursor-pointer p-3 bg-neutral-700 text-neutral-200 rounded-[12px] hover:bg-neutral-700/80">Iniciar sesión</button>
+				<button class="cursor-pointer p-3 bg-[#FF4B44] text-neutral-200 rounded-[12px] hover:bg-[#FF4B44]/80">Registrarse</button>
+			</nav>
+			<nav class="min-[630px]:hidden flex items-center justify-center m-2 mr-5">
+				<div class="relative">
+					<input id="menu-toggle" type="checkbox" class="peer hidden" />
+					<label for="menu-toggle" class="flex peer-checked:bg-neutral-700/80 rounded-[12px]">
+						<span class="sr-only">Abrir menú de navegación</span>
+						<img alt="hamburger-menu" src="/src/assets/svg/hamburger.svg" class="cursor-pointer hover:bg-neutral-700 rounded-[12px] p-1 duration-300" />
+					</label>
+					<div class="absolute right-[-8px] mt-3 w-52 h-[144px] bg-transparent rounded-xl flex-col gap-2 p-4 z-50 flex opacity-0 peer-checked:opacity-100 duration-300 backdrop-blur-[10px]"></div>
+					<div  class="absolute right-0 mt-3 w-48 bg-neutral-800 rounded-xl flex-col gap-2 p-4 z-50 flex opacity-0 peer-checked:opacity-100 duration-300">
+    					<button class="cursor-pointer p-3 bg-neutral-700 text-neutral-200 rounded-[12px] hover:bg-neutral-700/80 w-full text-left duration-300">Iniciar sesión</button>
+    					<button class="cursor-pointer p-3 bg-[#FF4B44] text-neutral-200 rounded-[12px] hover:bg-[#FF4B44]/80 w-full text-left duration-300">Registrarse</button>
+					</div>
+				</div>
+			</nav>
+		</header>
+		<main>
+			<slot />
+		</main>
+		<footer>
+			
+		</footer>	
+	</body>
+</html>
+

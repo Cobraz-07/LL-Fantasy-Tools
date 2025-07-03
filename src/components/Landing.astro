@@ -1,0 +1,31 @@
+---
+import '../styles/global.css';
+import { Image } from 'astro:assets';
+import hero from "/src/assets/img/hero.png";
+---
+
+<div class="flex flex-col gap-[10%] items-center justify-center m-[5%] min-[630px]:flex-row">
+    <div>
+        <h1 class="text-3xl text-left min-[630px]:text-4xl text-white mt-10">Controla el presupuesto de tus rivales en LL Fantasy</h1>
+        <p class="text-md min-[630px]:text-lg text-left text-neutral-300 mt-5 max-w-[600px] text-wrap">Supervisa en tiempo real cuánto dinero tienen tus oponentes, anticipa sus fichajes y toma decisiones más inteligentes por solo 5€.</p>
+        <div class="flex justify-start mt-10">
+            <button class="bg-[#FF4B44] text-white px-6 py-3 rounded-lg hover:bg-[#FF4B44]/80 transition duration-200 cursor-pointer">Registrarse</button>
+        </div>
+    </div>
+    <div class="relative flex items-center justify-center mt-15 rounded-[65px]">
+        <Image
+            src={hero}
+            alt="LaLiga Fantasy Tools Logo"
+            class="w-8/10 min-[630px]:w-100 h-auto relative z-10 shadow-lg"
+            loading="eager"
+        />
+        <div
+            class="absolute max-[630px]:m-auto inset-1 max-[630px]:w-8/10 z-0 rounded-[65px] pointer-events-none"
+            style="
+                box-shadow: 0 0 40px 10px #FF4B44, 0 0 60px 30px #FF4B44;
+                filter: blur(12px);
+                animation: pulse-glow 1.5s infinite;
+            "
+        ></div>
+    </div>
+</div>
