@@ -18,7 +18,7 @@ const button = tv({
     "disabled:pointer-events-none disabled:opacity-50",
   ],
   variants: {
-    variant: {
+    variant: { 
       default: "bg-foreground text-background hover:bg-foreground/90 focus-visible:outline-outline",
       primary:
         "bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:outline-primary",
@@ -34,6 +34,8 @@ const button = tv({
       warning:
         "bg-warning text-warning-foreground hover:bg-warning/90 focus-visible:outline-warning",
       error: "bg-error text-error-foreground hover:bg-error/90 focus-visible:outline-error",
+      signIn: "cursor-pointer px-6 py-3 bg-neutral-700 text-neutral-200 rounded-lg hover:bg-neutral-700/80",
+      signUp: "bg-[#FF4B44] text-white px-6 py-3 rounded-lg hover:bg-[#FF4B44]/80 transition duration-200 cursor-pointer",
     },
     size: {
       sm: "h-9 px-3 py-2 text-sm",

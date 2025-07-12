@@ -1,11 +1,12 @@
 ---
-import '../styles/global.css';
-import '../styles/starwind.css';
+import '@/styles/global.css';
+import "@/styles/starwind.css";
 import { Image } from 'astro:assets';
 import logo from "/src/assets/img/logo.png";
 import SpeedInsights from '@vercel/speed-insights/astro';
 import Analytics from '@vercel/analytics/astro';
 import hamburger from "/src/assets/svg/hamburger.svg";
+import { Button } from "@/components/starwind/button";
 ---
 
 <!doctype html>
@@ -26,8 +27,10 @@ import hamburger from "/src/assets/svg/hamburger.svg";
 				</h1>
 			</div>
 			<nav class="flex flex-row gap-6 m-5 text-lg max-[780px]:hidden">
-				<button class="cursor-pointer px-6 py-3 bg-neutral-700 text-neutral-200 rounded-lg hover:bg-neutral-700/80">Iniciar sesión</button>
-				<button class="bg-[#FF4B44] text-white px-6 py-3 rounded-lg hover:bg-[#FF4B44]/80 transition duration-200 cursor-pointer">Registrarse</button>
+				<!--<button class="cursor-pointer px-6 py-3 bg-neutral-700 text-neutral-200 rounded-lg hover:bg-neutral-700/80">Iniciar sesión</button> -->
+				<!--<button class="bg-[#FF4B44] text-white px-6 py-3 rounded-lg hover:bg-[#FF4B44]/80 transition duration-200 cursor-pointer">Registrarse</button> -->
+				<Button variant="signIn">Iniciar sesión</Button>
+				<Button variant="signUp">Registrarse</Button>
 			</nav>
 			<nav class="min-[780px]:hidden flex items-center justify-center m-2 mr-5">
 				<div class="relative">
