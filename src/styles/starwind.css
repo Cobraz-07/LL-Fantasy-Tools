@@ -121,15 +121,6 @@
 		--radius: 0.5rem;
 	}
 
-	* {
-		@apply border-border;
-	}
-	*:focus-visible {
-		@apply outline-outline;
-	}
-	html {
-		@apply bg-background text-foreground scheme-light dark:scheme-dark;
-	}
 	button {
 		@apply cursor-pointer;
 	}
