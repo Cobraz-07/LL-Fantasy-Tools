@@ -4,6 +4,8 @@ import tailwindcss from "@tailwindcss/vite";
 
 import icon from "astro-icon";
 
+import vercel from "@astrojs/vercel";
+
 // https://astro.build/config
 export default defineConfig({
   vite: {
@@ -11,4 +13,5 @@ export default defineConfig({
 },
 
   integrations: [icon()],
+  adapter: vercel(),
 });
