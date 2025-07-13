@@ -12,71 +12,7 @@ import { Label } from "@/components/starwind/label";
             <Input id="emailInput" class="mb-4 mt-2 bg-neutral-700 text-neutral-200" type="email" name="email" id="email" required />
             <Label class="text-neutral-200" for="password">Password</Label>
             <Input class="mb-4 mt-2 bg-neutral-700 text-neutral-200" type="password" name="password" id="password" required />
-            <div id="purchaseSection">
-                <p class="text-neutral-200 mb-4">Compra requerida para registrarse</p>
-                <Button id="buyButton" variant="stripe" href="https://buy.stripe.com/8x228r0Bfa9abemezD0Ba00" target="_blank" rel="noopener noreferrer">Comprar acceso</Button>
-            </div>
-            <Button id="registerButton" class="mt-10 text-neutral-200" variant="signUp" type="submit" disabled>Registrarse</Button>
-            <p id="statusMessage" class="mt-4 text-sm text-neutral-400"></p>
+            <Button id="registerButton" class="mt-10 text-neutral-200" variant="signUp" type="submit">Registrarse</Button>
         </form>
     </div>
-
-    <script>
-        // Client-side script to check purchase status
-        const emailInput = document.getElementById('emailInput');
-        const registerButton = document.getElementById('registerButton');
-        const buyButton = document.getElementById('buyButton');
-        const purchaseSection = document.getElementById('purchaseSection');
-        const statusMessage = document.getElementById('statusMessage');
-        let checkingStatus = false;
-        
-        async function checkPurchaseStatus(email: string | number | boolean | string[]) {
-            if (!email || !email.includes('@') || checkingStatus) return;
-            
-            checkingStatus = true;
-            statusMessage!.textContent = "Checking purchase status...";
-
-            try {
-                const response = await fetch(`/api/check-purchase?email=${encodeURIComponent(email)}`);
-                const data = await response.json();
-                
-                if (data.hasPurchased) {
-                    registerButton!.disabled = false;
-                    purchaseSection!.style.display = 'none';
-                    statusMessage!.textContent = "✅ Purchase verified! You can now register.";
-                    statusMessage!.className = "mt-4 text-sm text-green-400";
-                } else {
-                    registerButton!.disabled = true;
-                    purchaseSection!.style.display = 'block';
-                    statusMessage!.textContent = "⚠️ Purchase required before registration.";
-                    statusMessage!.className = "mt-4 text-sm text-yellow-400";
-                }
-            } catch (error) {
-                console.error("Error checking purchase status:", error);
-                statusMessage!.textContent = "Error checking purchase status. Please try again.";
-                statusMessage!.className = "mt-4 text-sm text-red-400";
-            } finally {
-                checkingStatus = false;
-            }
-        }
-        
-        emailInput!.addEventListener('blur', () => {
-            checkPurchaseStatus(emailInput!.value);
-        });
-        
-        // Check status again when page loads (in case user is returning after purchase)
-        document.addEventListener('DOMContentLoaded', () => {
-            if (emailInput!.value) {
-                checkPurchaseStatus(emailInput!.value);
-            }
-        });
-        
-        // Update Stripe checkout URL to include email parameter
-        emailInput!.addEventListener('input', () => {
-            if (emailInput!.value) {
-                const email = encodeURIComponent(emailInput!.value);
-                buyButton!.href = `https://buy.stripe.com/8x228r0Bfa9abemezD0Ba00?prefilled_email=${email}`;
-            }
-        });
-    </script>
 </Layout>
