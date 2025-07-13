@@ -15,7 +15,7 @@ if (accessToken && refreshToken) {
 ---
 
 <Layout title="Sign in">
-    <div class="flex flex-col items-center justify-center bg-neutral-900 p-5  w-auto max-[780px]:w-80% min-w-150  m-auto">
+    <div class="flex flex-col items-center justify-center bg-neutral-900 p-5  w-auto max-[780px]:w-80% min-[780px]:min-w-150 min-w-150  m-auto">
         <form action="/api/auth/signin" method="post" class="bg-neutral-800 p-8 rounded-3xl shadow-lg w-full max-w-md flex flex-col">
             <Label class="text-neutral-200" for="email">Email</Label>
             <Input class="mb-4 mt-2 bg-neutral-700 text-neutral-200" type="email" name="email" id="email" />
