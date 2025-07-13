@@ -34,48 +34,48 @@ import { Label } from "@/components/starwind/label";
             if (!email || !email.includes('@') || checkingStatus) return;
             
             checkingStatus = true;
-            statusMessage.textContent = "Checking purchase status...";
-            
+            statusMessage!.textContent = "Checking purchase status...";
+
             try {
                 const response = await fetch(`/api/check-purchase?email=${encodeURIComponent(email)}`);
                 const data = await response.json();
                 
                 if (data.hasPurchased) {
-                    registerButton.disabled = false;
-                    purchaseSection.style.display = 'none';
-                    statusMessage.textContent = "✅ Purchase verified! You can now register.";
-                    statusMessage.className = "mt-4 text-sm text-green-400";
+                    registerButton!.disabled = false;
+                    purchaseSection!.style.display = 'none';
+                    statusMessage!.textContent = "✅ Purchase verified! You can now register.";
+                    statusMessage!.className = "mt-4 text-sm text-green-400";
                 } else {
-                    registerButton.disabled = true;
-                    purchaseSection.style.display = 'block';
-                    statusMessage.textContent = "⚠️ Purchase required before registration.";
-                    statusMessage.className = "mt-4 text-sm text-yellow-400";
+                    registerButton!.disabled = true;
+                    purchaseSection!.style.display = 'block';
+                    statusMessage!.textContent = "⚠️ Purchase required before registration.";
+                    statusMessage!.className = "mt-4 text-sm text-yellow-400";
                 }
             } catch (error) {
                 console.error("Error checking purchase status:", error);
-                statusMessage.textContent = "Error checking purchase status. Please try again.";
-                statusMessage.className = "mt-4 text-sm text-red-400";
+                statusMessage!.textContent = "Error checking purchase status. Please try again.";
+                statusMessage!.className = "mt-4 text-sm text-red-400";
             } finally {
                 checkingStatus = false;
             }
         }
         
-        emailInput.addEventListener('blur', () => {
-            checkPurchaseStatus(emailInput.value);
+        emailInput!.addEventListener('blur', () => {
+            checkPurchaseStatus(emailInput!.value);
         });
         
         // Check status again when page loads (in case user is returning after purchase)
         document.addEventListener('DOMContentLoaded', () => {
-            if (emailInput.value) {
-                checkPurchaseStatus(emailInput.value);
+            if (emailInput!.value) {
+                checkPurchaseStatus(emailInput!.value);
             }
         });
         
         // Update Stripe checkout URL to include email parameter
-        emailInput.addEventListener('input', () => {
-            if (emailInput.value) {
-                const email = encodeURIComponent(emailInput.value);
-                buyButton.href = `https://buy.stripe.com/8x228r0Bfa9abemezD0Ba00?prefilled_email=${email}`;
+        emailInput!.addEventListener('input', () => {
+            if (emailInput!.value) {
+                const email = encodeURIComponent(emailInput!.value);
+                buyButton!.href = `https://buy.stripe.com/8x228r0Bfa9abemezD0Ba00?prefilled_email=${email}`;
             }
         });
     </script>
