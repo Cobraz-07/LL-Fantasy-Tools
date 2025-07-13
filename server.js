@@ -1,5 +1,5 @@
 const express = require('express');
-const stripe = require('stripe')(import.meta.env.PUBLIC_STRIPE_KEY);
+const stripe = require('stripe')(import.meta.env.STRIPE_SECRET_KEY);
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(import.meta.env.SUPABASE_URL, import.meta.env.SUPABASE_SERVICE_ROLE_KEY);
 
