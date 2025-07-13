@@ -1,7 +1,7 @@
 const express = require('express');
 const stripe = require('stripe')(import.meta.env.PUBLIC_STRIPE_KEY);
-// Add database connection (example with Supabase, similar to what you're using)
-import supabase from '../../lib/supabase'; 
+const { createClient } = require('@supabase/supabase-js');
+const supabase = createClient(import.meta.env.SUPABASE_URL, import.meta.env.SUPABASE_SERVICE_ROLE_KEY);
 
 const app = express();
 
@@ -21,28 +21,36 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (request, re
     event = request.body;
   }
 
-  // Handle checkout.session.completed event to track successful purchases
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-    
-    // Get customer email from the session
     const customerEmail = session.customer_details.email;
-    
-    // Store purchase information in your database
+
     try {
+      // Create or retrieve a Stripe Customer
+      let customer = await stripe.customers.list({ email: customerEmail, limit: 1 });
+      if (customer.data.length === 0) {
+        customer = await stripe.customers.create({
+          email: customerEmail,
+        });
+      } else {
+        customer = customer.data[0];
+      }
+
+      // Store purchase and customer information in your database
       const { error } = await supabase
         .from('purchases')
         .insert({
           email: customerEmail,
           product_id: 'premium_membership',
           status: 'active',
-          stripe_session_id: session.id
+          stripe_session_id: session.id,
+          stripe_customer_id: customer.id
         });
         
       if (error) throw error;
       console.log(`Purchase recorded for ${customerEmail}`);
     } catch (err) {
-      console.error('Error recording purchase:', err);
+      console.error('Error recording purchase or creating customer:', err);
     }
   }
 
