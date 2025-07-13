@@ -1,5 +1,5 @@
 ---
-import Layout from "../layouts/Layout.astro";
+import Layout from "../layouts/SignedInLayout.astro";
 import { supabase } from "../lib/supabase";
 
 const { cookies, redirect } = Astro;
@@ -30,9 +30,5 @@ if (error) {
 const display_name = data?.user?.user_metadata?.display_name;
 ---
 <Layout title="panel de control">
-  <h1>Bienvenido {display_name}</h1>
-  <p>Estamos felices de verte aquí</p>
-  <form action="/api/auth/signout">
-    <button type="submit">Cerrar sesión</button>
-  </form>
+    
 </Layout>
