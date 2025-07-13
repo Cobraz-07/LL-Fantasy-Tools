@@ -1,3 +1,6 @@
+export const prerender = false;
+
+
 app.post('/webhook', express.raw({type: 'application/json'}), async (request, response) => {
   const endpointSecret = import.meta.env.STRIPE_WEBHOOK_SECRET;
   let event;
