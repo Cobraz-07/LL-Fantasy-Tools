@@ -21,9 +21,11 @@ import { Icon } from 'astro-icon/components'
 	<body class="w-full bg-neutral-900 roboto">
 		<header class="m-auto my-10 flex flex-row items-center justify-between bg-neutral-800 rounded-xl max-w-[1800px] shadow-lg sm:rounded-3xl min-[780px]:mx-[10%] max-[780px]:my-5 max-[780px]:w-9/10">
 			<div class="p-3 ml-5 text-neutral-200 flex flex-row items-center gap-6">
-				<Image src={logo} alt="LL Fantasy Tools Logo" class="h-12 w-12" loading="eager"/>
+				<Image src={logo} alt="LL Fantasy Tools Logo" class="h-12 w-12" loading="eager" />
+				<a href="/" class="cursor-pointer absolute w-12 h-12"></a>
 				<h1 class="flex justify-center items-center text-xl font-medium">
 					LL Fantasy Tools
+					<a href="/" class="cursor-pointer absolute w-[150px] h-[28px]"></a>
 				</h1>
 			</div>
 			<nav class="flex flex-row gap-6 m-5 text-lg max-[780px]:hidden">

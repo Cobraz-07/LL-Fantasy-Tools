@@ -9,9 +9,9 @@ import { Label } from "@/components/starwind/label";
 <div class="flex flex-col items-center justify-center bg-neutral-900 p-5 w-[80%] m-auto">
     <form action="/api/auth/register" method="post" class="bg-neutral-800 p-8 rounded-3xl shadow-lg w-full max-w-md flex flex-col">
         <Label class="text-neutral-200" for="email">Email</Label>
-        <Input class="mb-4 mt-2 bg-neutral-700 text-neutral-200" type="email" name="email" id="email" />
+        <Input class="mb-4 mt-2 bg-neutral-700 text-neutral-200" type="email" name="email" id="email" required />
         <Label class="text-neutral-200" for="password">Password</Label>
-        <Input class="mb-4 mt-2 bg-neutral-700 text-neutral-200" type="password" name="password" id="password" />
+        <Input class="mb-4 mt-2 bg-neutral-700 text-neutral-200" type="password" name="password" id="password" required />
         <Button class="mt-10 text-neutral-200" variant="signUp" type="submit">Registrarse</Button>
     </form>
 </div>
