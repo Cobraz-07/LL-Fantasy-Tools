@@ -1,12 +1,31 @@
 ---
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/starwind/tabs";
 import '../styles/global.css';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/starwind/dialog";
+
+import { Input } from "@/components/starwind/input";
+
+import { Label } from "@/components/starwind/label";
+
+import { Button } from "@/components/starwind/button";
 ---
 
 <Tabs defaultValue="astro" class="w-full flex flex-col justify-start items-start bg-neutral-800 p-5 rounded-xl max-[780px]:rounded-3xl">
   <TabsList class="w-full flex justify-start items-start bg-neutral-800">
     <TabsTrigger class="max-w-[200px] w-auto" value="astro">Astro</TabsTrigger>
     <TabsTrigger class="max-w-[200px] w-auto" value="next">Next.js</TabsTrigger>
+    <DialogTrigger for="añadir-equipo" asChild>
+      <Button>Añadir equipo</Button>
+    </DialogTrigger>
   </TabsList>
   <TabsContent value="astro">
     Build fast websites, faster with Astro's next-gen island architecture.
@@ -16,3 +35,57 @@ import '../styles/global.css';
   </TabsContent>
 </Tabs>
 
+<Dialog id="añadir-equipo">
+  <DialogContent class="sm:max-w-[450px]" animationDuration={200}>
+    <form id="añadir-equipo-form" method="dialog" class="flex flex-col gap-4">
+      <DialogHeader>
+        <DialogTitle class="text-neutral-200">Añadir equipo</DialogTitle>
+        <DialogDescription>
+          Make changes to your profile here. Click save when you're done.
+        </DialogDescription>
+      </DialogHeader>
+      <div class="grid gap-4 py-4">
+        <div class="grid grid-cols-4 items-center gap-4">
+          <Label for="name-edit" class="text-right"> Name </Label>
+          <Input id="name-edit" name="name" placeholder="Pedro Duarte" class="col-span-3" />
+        </div>
+        <div class="grid grid-cols-4 items-center gap-4">
+          <Label for="username" class="text-right"> Username </Label>
+          <Input id="username" name="username" placeholder="@peduarte" class="col-span-3" />
+        </div>
+      </div>
+      <DialogFooter>
+        <DialogClose asChild>
+          <Button type="button" variant="outline" class="text-neutral-200">Cancelar</Button>
+        </DialogClose>
+        <Button type="submit">Guardar equipos</Button>
+      </DialogFooter>
+    </form>
+  </DialogContent>
+</Dialog>
+
+<script>
+  function handleFormSubmit() {
+    const form = document.querySelector("#edit-profile-form") as HTMLFormElement;
+
+    if (form) {
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const formValues = Object.fromEntries(formData.entries());
+
+        // demo form data logging
+        console.log("Form submission values:", formValues);
+
+        // You can add additional logic here like:
+        // - Form validation
+        // - API submission
+        // - Success/error handling
+      });
+    }
+  }
+
+  handleFormSubmit();
+
+  document.addEventListener("astro:after-swap", handleFormSubmit);
+</script>
