@@ -31,8 +31,8 @@ import { Icon } from 'astro-icon/components'
 				</h1>
 			</div>
 			<nav class="flex flex-row gap-6 m-5 text-lg max-[780px]:hidden">
-				<Button variant="signIn" href="/api/signin">Iniciar sesión</Button>
-				<Button variant="signUp" href="/api/register">Registrarse</Button>
+				<Button class="max-[780px]:hidden" variant="signIn" href="/api/signin">Iniciar sesión</Button>
+				<Button class="max-[780px]:hidden" variant="signUp" href="/api/register">Registrarse</Button>
 			</nav>
 			<nav class="min-[780px]:hidden flex items-center justify-center m-2 mr-5">
 				<div class="relative">
@@ -43,8 +43,8 @@ import { Icon } from 'astro-icon/components'
 					</label>
 					<div class="absolute right-[-8px] mt-3 w-52 h-[144px] bg-transparent rounded-xl flex-col gap-2 p-4 z-50 flex opacity-0 peer-checked:opacity-100 duration-300 backdrop-blur-[10px]"></div>
 					<div  class="absolute right-0 mt-4 w-48 bg-neutral-800 rounded-xl flex-col gap-3 p-4 z-50 flex opacity-0 peer-checked:opacity-100 duration-300">
-    					<Button variant="signIn" href="/api/signin">Iniciar sesión</Button>
-						<Button variant="signUp" href="/api/register">Registrarse</Button>
+    					<Button class="min-[780px]:hidden" variant="signIn" href="/api/signin">Iniciar sesión</Button>
+						<Button class="min-[780px]:hidden" variant="signUp" href="/api/register">Registrarse</Button>
 					</div>
 				</div>
 			</nav>
