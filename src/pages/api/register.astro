@@ -6,8 +6,8 @@ import { Label } from "@/components/starwind/label";
 ---
 
 <Layout title="Register">
-    <div class="flex flex-col items-center justify-center bg-neutral-900 p-5 max-[780px]:w-9/10 w-auto min-[780px]:min-w-150  m-auto">
-        <form id="registerForm" action="/api/auth/register" method="post" class="bg-neutral-800 p-8 rounded-3xl shadow-lg w-full max-w-md flex flex-col">
+    <div class="flex flex-col items-center justify-center bg-neutral-900 p-5 max-[780px]:w-full w-auto min-[780px]:min-w-150  m-auto">
+        <form id="registerForm" action="/api/auth/register" method="post" class="bg-neutral-800 p-8 rounded-xl shadow-lg w-full max-w-md flex flex-col">
             <Label class="text-neutral-200" for="username">Username</Label>
             <Input class="mb-4 mt-2 bg-neutral-700 text-neutral-200" type="text" name="username" id="username" required />
             <Label class="text-neutral-200" for="email">Email</Label>
