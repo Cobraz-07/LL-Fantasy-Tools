@@ -19,19 +19,14 @@ import { Label } from "@/components/starwind/label";
 import { Button } from "@/components/starwind/button";
 ---
 
-<Tabs defaultValue="astro" class="w-full flex flex-col justify-start items-start bg-neutral-800 p-5 rounded-xl max-[780px]:rounded-3xl">
+<Tabs defaultValue="" class="w-full flex flex-col justify-start items-start bg-neutral-800 p-5 rounded-xl max-[780px]:rounded-3xl">
   <TabsList class="w-full flex justify-start items-start bg-neutral-800">
-    <TabsTrigger class="max-w-[200px] w-auto" value="astro">Astro</TabsTrigger>
-    <TabsTrigger class="max-w-[200px] w-auto" value="next">Next.js</TabsTrigger>
+    <TabsTrigger class="max-w-[200px] w-auto" value=""></TabsTrigger>
     <DialogTrigger for="añadir-equipo" asChild>
       <Button>Añadir equipo</Button>
     </DialogTrigger>
   </TabsList>
-  <TabsContent value="astro">
-    Build fast websites, faster with Astro's next-gen island architecture.
-  </TabsContent>
-  <TabsContent value="next">
-    The React framework for production-grade applications that scale.
+  <TabsContent value="">
   </TabsContent>
 </Tabs>
 
@@ -46,46 +41,114 @@ import { Button } from "@/components/starwind/button";
       </DialogHeader>
       <div class="grid gap-4 py-4">
         <div class="grid grid-cols-4 items-center gap-4">
-          <Label for="name-edit" class="text-right"> Name </Label>
-          <Input id="name-edit" name="name" placeholder="Pedro Duarte" class="col-span-3" />
+          <Label for="name-edit" class="text-right"> Nombre </Label>
+          <Input id="name-edit" name="name" placeholder="Pedro Duarte" class="col-span-3" required/>
         </div>
         <div class="grid grid-cols-4 items-center gap-4">
-          <Label for="username" class="text-right"> Username </Label>
-          <Input id="username" name="username" placeholder="@peduarte" class="col-span-3" />
+          <Label for="balance" class="text-right"> Presupuesto </Label>
+          <Input id="balance" name="balance" type="number" min="0" placeholder="0" class="col-span-3" />
         </div>
       </div>
       <DialogFooter>
         <DialogClose asChild>
           <Button type="button" variant="outline" class="text-neutral-200">Cancelar</Button>
         </DialogClose>
-        <Button type="submit">Guardar equipos</Button>
+        <Button type="submit">Guardar equipo</Button>
       </DialogFooter>
     </form>
   </DialogContent>
 </Dialog>
 
 <script>
-  function handleFormSubmit() {
-    const form = document.querySelector("#edit-profile-form") as HTMLFormElement;
+    import { createClient } from '@supabase/supabase-js';
 
-    if (form) {
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const formData = new FormData(form);
-        const formValues = Object.fromEntries(formData.entries());
+    // Create client-side supabase client
+    const supabaseClient = createClient(
+      import.meta.env.PUBLIC_SUPABASE_URL,
+      import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+    );
 
-        // demo form data logging
-        console.log("Form submission values:", formValues);
+    async function createTeam(name: string, balance: number = 0) {
+    try {
+      // Get tokens from cookies (same method as dashboard)
+      const accessToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('sb-access-token='))
+        ?.split('=')[1];
 
-        // You can add additional logic here like:
-        // - Form validation
-        // - API submission
-        // - Success/error handling
+      const refreshToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('sb-refresh-token='))
+        ?.split('=')[1];
+
+      if (!accessToken || !refreshToken) {
+        throw new Error('No authentication tokens found');
+      }
+
+      // Set session
+      const { data: sessionData, error: sessionError } = await supabaseClient.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
       });
+
+      if (sessionError || !sessionData.user) {
+        throw new Error('Failed to restore session');
+      }
+
+      const { data, error } = await supabaseClient
+        .from('teams')
+        .insert([
+          {
+            user_id: sessionData.user.id,
+            name: name,
+            balance: balance
+          }
+        ])
+        .select();
+
+      if (error) throw error;
+
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error creating team:', error);
+      return { success: false, error: (error as Error).message };
     }
   }
 
-  handleFormSubmit();
+    function handleFormSubmit() {
+      const form = document.querySelector("#añadir-equipo-form") as HTMLFormElement;
 
-  document.addEventListener("astro:after-swap", handleFormSubmit);
-</script>
+      if (form) {
+        form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    const name = formData.get('name') as string;
+    const balanceStr = formData.get('balance') as string;
+    const balance = balanceStr ? parseFloat(balanceStr) : 0;
+
+    if (!name?.trim()) {
+      alert('Por favor introduce el nombre del equipo');
+      return;
+    }
+
+    if (balance < 0) {
+      alert('El presupuesto no puede ser negativo!');
+      return;
+    }
+
+    const result = await createTeam(name.trim(), balance);
+
+    if (result.success) {
+      alert('Equipo creado!');
+      form.reset();
+      // Close dialog or refresh teams list
+    } else {
+      alert(`Error creando equipo: ${result.error}`);
+    }
+  });
+      }
+    }
+
+    handleFormSubmit();
+    document.addEventListener("astro:after-swap", handleFormSubmit);
+  </script>
