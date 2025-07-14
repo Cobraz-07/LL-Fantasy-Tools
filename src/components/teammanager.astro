@@ -1,45 +1,6 @@
 ---
-import { getTeams, createTeam, updateTeamBudget, getBudgetHistory } from '../lib/teams'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/starwind/tabs";
 import '../styles/global.css';
-
-let teams = await getTeams()
-let selectedTeamId = ''
-let budgetAmount = 0
-let budgetDescription = ''
-let message = { text: '', isError: false }
-let historyData = await (selectedTeamId ? getBudgetHistory(selectedTeamId) : [])
-
-async function handleTeamSelect() {
-  if (selectedTeamId) {
-    historyData = await getBudgetHistory(selectedTeamId)
-  } else {
-    historyData = []
-  }
-}
-
-async function handleBudgetUpdate() {
-  if (!selectedTeamId || budgetAmount === 0) return
-  
-  const result = await updateTeamBudget({
-    teamId: selectedTeamId,
-    amount: budgetAmount,
-    description: budgetDescription
-  })
-  
-  if (result.success) {
-    message = { text: 'Budget updated successfully!', isError: false }
-    teams = await getTeams()
-    historyData = await getBudgetHistory(selectedTeamId)
-    budgetAmount = 0
-    budgetDescription = ''
-  } else {
-    message = { 
-      text: `Failed to update budget: ${result.error || 'Unknown error'}`,
-      isError: true 
-    }
-  }
-}
 ---
 
 <Tabs defaultValue="astro" class="w-full flex flex-col justify-start items-start bg-neutral-800 p-5 rounded-xl max-[780px]:rounded-3xl">
