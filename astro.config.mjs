@@ -13,6 +13,8 @@ export default defineConfig({
   plugins: [tailwindcss()],
 },
 
-  integrations: [icon()],
+  integrations: [icon({
+    iconDir: "src/icons",
+  })],
   adapter: vercel({ imageService: true }),
 });
