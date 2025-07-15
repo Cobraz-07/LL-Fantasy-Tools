@@ -1,6 +1,6 @@
- ---
+---
   import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/starwind/tabs";
-  import '../styles/global.css';
+  import 'src/styles/global.css';
   import {
     Dialog,
     DialogContent,
@@ -17,16 +17,19 @@
   import { Label } from "@/components/starwind/label";
 
   import { Button } from "@/components/starwind/button";
-  ---
+---
 
   <Tabs defaultValue="" class="w-full flex flex-col justify-start items-start bg-neutral-800 p-5 rounded-xl max-[780px]:rounded-3xl">
     <TabsList class="tabs-list w-full flex justify-start items-center bg-neutral-800">
-      <DialogTrigger for="añadir-equipo" asChild>
-        <Button>Añadir equipo</Button>
-      </DialogTrigger>
+      <div class="ml-auto flex">
+        <DialogTrigger for="añadir-equipo" asChild>
+          <Button>Añadir equipo</Button>
+        </DialogTrigger>
+        <DialogTrigger for="cambiar-balance" asChild>
+          <Button id="cambiar-balance-btn" class="ml-3">Cambiar presupuesto</Button>
+        </DialogTrigger>
+      </div>
     </TabsList>
-    <TabsContent value="">
-    </TabsContent>
   </Tabs>
 
   <Dialog id="añadir-equipo">
@@ -58,8 +61,35 @@
     </DialogContent>
   </Dialog>
 
+  <Dialog id="cambiar-balance">
+    <DialogContent class="sm:max-w-[450px]" animationDuration={200}>
+      <form id="cambiar-balance-form" method="dialog" class="flex flex-col gap-4">
+        <DialogHeader>
+          <DialogTitle class="text-neutral-200">Cambiar presupuesto</DialogTitle>
+          <DialogDescription>
+            Introduce la cantidad a añadir o restar (usa números negativos para restar).
+          </DialogDescription>
+        </DialogHeader>
+        <div class="grid gap-4 py-4">
+          <div class="grid grid-cols-4 items-center gap-4">
+            <Label for="new-balance-input" class="text-right">Cantidad</Label>
+            <Input id="new-balance-input" name="new-balance" type="number" placeholder="0" class="col-span-3" required/>
+          </div>
+        </div>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button type="button" variant="outline" class="text-neutral-200">Cancelar</Button>
+          </DialogClose>
+          <Button type="submit">Cambiar presupuesto</Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
+  </Dialog>
+
   <script>
       import { createClient } from '@supabase/supabase-js';
+      import Chart from 'chart.js/auto';
+
 
       // Create client-side supabase client
       const supabaseClient = createClient(
@@ -106,6 +136,27 @@
           .select();
 
         if (error) throw error;
+
+        // Add initial balance to budget history if balance > 0
+        if (balance > 0 && data && data.length > 0) {
+          const teamId = data[0].id;
+          const { error: historyError } = await supabaseClient
+            .from('budget_history')
+            .insert([
+              {
+                team_id: teamId,
+                amount: balance,
+                previous_balance: 0,
+                new_balance: balance,
+                description: 'Presupuesto inicial'
+              }
+            ]);
+          
+          if (historyError) {
+            console.error('Error adding initial budget history:', historyError);
+            // Don't fail the team creation if history fails
+          }
+        }
 
         return { success: true, data };
       } catch (error) {
@@ -198,6 +249,347 @@
       }
     }
 
+    async function updateTeamBalance(teamId: string, amount: number) {
+      try {
+        // Get tokens from cookies
+        const accessToken = document.cookie
+          .split('; ')
+          .find(row => row.startsWith('sb-access-token='))
+          ?.split('=')[1];
+
+        const refreshToken = document.cookie
+          .split('; ')
+          .find(row => row.startsWith('sb-refresh-token='))
+          ?.split('=')[1];
+
+        if (!accessToken || !refreshToken) {
+          throw new Error('No authentication tokens found');
+        }
+
+        // Set session
+        const { data: sessionData, error: sessionError } = await supabaseClient.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+        if (sessionError || !sessionData.user) {
+          throw new Error('Failed to restore session');
+        }
+
+        // Create description based on transaction type
+        const description = amount >= 0 
+          ? `Added ${amount} to presupuesto` 
+          : `Subtracted ${Math.abs(amount)} from presupuesto`;
+
+        // Use the stored function to update balance and record history
+        const { data, error } = await supabaseClient
+          .rpc('update_team_balance', {
+            team_id: teamId,
+            amount: amount,
+            description: description
+          });
+
+        if (error) throw error;
+
+        return { success: true, data };
+      } catch (error) {
+        console.error('Error actualizando el presupuesto:', error);
+        return { success: false, error: (error as Error).message };
+      }
+    }
+
+    async function getBudgetHistory(teamId: string) {
+      try {
+        // Get tokens from cookies
+        const accessToken = document.cookie
+          .split('; ')
+          .find(row => row.startsWith('sb-access-token='))
+          ?.split('=')[1];
+
+        const refreshToken = document.cookie
+          .split('; ')
+          .find(row => row.startsWith('sb-refresh-token='))
+          ?.split('=')[1];
+
+        if (!accessToken || !refreshToken) {
+          throw new Error('No authentication tokens found');
+        }
+
+        // Set session
+        const { data: sessionData, error: sessionError } = await supabaseClient.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+        if (sessionError || !sessionData.user) {
+          throw new Error('Failed to restore session');
+        }
+
+        const { data, error } = await supabaseClient
+          .from('budget_history')
+          .select('*')
+          .eq('team_id', teamId)
+          .order('created_at', { ascending: true });
+
+        if (error) throw error;
+
+        return { success: true, data };
+      } catch (error) {
+        console.error('Error fetching budget history:', error);
+        return { success: false, error: (error as Error).message };
+      }
+    }
+
+    async function renderChart(teamId: string) {
+      try {
+        console.log('Rendering chart for team:', teamId);
+        
+        const historyResult = await getBudgetHistory(teamId);
+        
+        if (!historyResult.success || !historyResult.data) {
+          console.error('Failed to load budget history:', historyResult.error);
+          return;
+        }
+
+        console.log('Budget history data:', historyResult.data);
+
+        const canvas = document.getElementById(`chart-${teamId}`) as HTMLCanvasElement;
+        if (!canvas) {
+          console.error('Canvas not found for team:', teamId);
+          return;
+        }
+
+        console.log('Canvas found:', canvas);
+
+        // Clean up existing content
+        const existingChart = Chart.getChart(canvas);
+        if (existingChart) {
+          existingChart.destroy();
+        }
+        
+        // Show canvas and remove any existing message
+        canvas.style.display = 'block';
+        const chartContainer = canvas.parentElement;
+        if (chartContainer) {
+          const existingMessage = chartContainer.querySelector('div.flex.items-center');
+          if (existingMessage) {
+            existingMessage.remove();
+          }
+        }
+
+        const historyData = historyResult.data;
+        
+        if (!historyData || historyData.length === 0) {
+          console.log('No history data available for team:', teamId);
+          // Hide canvas and show a nice message
+          canvas.style.display = 'none';
+          const chartContainer = canvas.parentElement;
+          if (chartContainer) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'flex items-center justify-center h-full text-neutral-400 text-sm';
+            messageDiv.textContent = 'No hay datos de historial disponibles';
+            chartContainer.appendChild(messageDiv);
+          }
+          return;
+        }
+        
+        // Prepare data for Chart.js
+        const labels = historyData.map((entry: any) => {
+          const date = new Date(entry.created_at);
+          return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        });
+        
+        const balanceData = historyData.map((entry: any) => entry.new_balance);
+
+        console.log('Chart labels:', labels);
+        console.log('Chart data:', balanceData);
+
+        // Create the chart
+        const chart = new Chart(canvas, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Presupuesto',
+              data: balanceData,
+              borderColor: 'rgb(34, 197, 94)',
+              backgroundColor: 'rgba(34, 197, 94, 0.1)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  color: '#a3a3a3'
+                },
+                grid: {
+                  color: '#525252'
+                }
+              },
+              x: {
+                ticks: {
+                  color: '#a3a3a3',
+                  maxRotation: 45
+                },
+                grid: {
+                  color: '#525252'
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                labels: {
+                  color: '#a3a3a3'
+                }
+              }
+            }
+          }
+        });
+
+        console.log('Chart created successfully:', chart);
+      } catch (error) {
+        console.error('Error rendering chart:', error);
+      }
+    }
+
+    async function addNewTeamTab(team: any) {
+      const tabsList = document.querySelector('.tabs-list') as HTMLElement;
+      if (!tabsList) return;
+
+      const existingTabs = tabsList.querySelectorAll('[data-team-tab]');
+      const isFirstTab = existingTabs.length === 0;
+
+      // Create the new team tab and content using the same logic as renderTeamTabs
+      const tabTrigger = document.createElement('button');
+      tabTrigger.className = 'w-min starwind-transition-colors mr-3 inline-flex items-center justify-center rounded-sm px-3 py-3 font-medium whitespace-nowrap data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm focus-visible:outline-outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50 relative';
+
+      tabTrigger.setAttribute('data-tabs-trigger', '');
+      tabTrigger.setAttribute('data-value', `team-${team.id}`);
+      tabTrigger.setAttribute('data-team-tab', 'true');
+      tabTrigger.setAttribute('role', 'tab');
+      tabTrigger.setAttribute('type', 'button');
+
+      if (isFirstTab) {
+        tabTrigger.setAttribute('data-state', 'active');
+        tabTrigger.setAttribute('aria-selected', 'true');
+      } else {
+        tabTrigger.setAttribute('data-state', 'inactive');
+        tabTrigger.setAttribute('aria-selected', 'false');
+      }
+
+      const tabText = document.createElement('span');
+      tabText.textContent = team.name;
+
+      const deleteButton = document.createElement('button');
+      deleteButton.className = isFirstTab ? 'ml-5 p-1 rounded hover:bg-red-500/20 transition-colors' : 'ml-5 p-1 rounded hover:bg-red-500/20 transition-colors hidden';
+      deleteButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="w-4 h-4 fill-red-400 hover:fill-red-300"><path d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z"/></svg>`;
+      deleteButton.setAttribute('data-team-id', team.id);
+      deleteButton.setAttribute('data-team-name', team.name);
+      deleteButton.setAttribute('type', 'button');
+
+      deleteButton.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (confirm(`Estás seguro de que quieres borrar el equipo "${team.name}"?`)) {
+          const result = await deleteTeam(team.id);
+          if (result.success) {
+            alert('Equipo borrado!');
+            await renderTeamTabs();
+          } else {
+            alert(`Error deleting team: ${result.error}`);
+          }
+        }
+      });
+
+      tabTrigger.appendChild(tabText);
+      tabTrigger.appendChild(deleteButton);
+
+      // Create tab content
+      const tabContent = document.createElement('div');
+      tabContent.setAttribute('data-tabs-content', '');
+      tabContent.setAttribute('data-value', `team-${team.id}`);
+      tabContent.setAttribute('data-team-content', 'true');
+      tabContent.setAttribute('data-state', isFirstTab ? 'active' : 'inactive');
+      tabContent.className = 'w-full mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=inactive]:hidden';
+      
+      tabContent.innerHTML = `
+        <div class="p-4 bg-neutral-700 rounded-lg w-full space-y-4">
+          <div class="flex justify-between items-center">
+            <p class="text-neutral-400 text-2xl"><span class="text-green-400 font-bold text-2xl">${Number(team.balance).toLocaleString()}</span>  €</p>
+          </div>
+          <div class="bg-neutral-600 p-4 rounded-lg">
+            <h3 class="text-neutral-200 text-lg font-semibold mb-3">Historial de Presupuesto</h3>
+            <div class="h-64 w-full">
+              <canvas id="chart-${team.id}" class="w-full h-full"></canvas>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Add click handler for tab switching
+      tabTrigger.addEventListener('click', () => {
+        const allTabs = tabsList.querySelectorAll('[data-tabs-trigger]');
+        allTabs.forEach(tab => {
+          tab.setAttribute('data-state', 'inactive');
+          tab.setAttribute('aria-selected', 'false');
+          const deleteBtn = tab.querySelector('button[data-team-id]');
+          if (deleteBtn) {
+            deleteBtn.className = deleteBtn.className.replace('hidden', '').trim() + ' hidden';
+          }
+        });
+
+        tabTrigger.setAttribute('data-state', 'active');
+        tabTrigger.setAttribute('aria-selected', 'true');
+        const activeDeleteBtn = tabTrigger.querySelector('button[data-team-id]');
+        if (activeDeleteBtn) {
+          activeDeleteBtn.className = activeDeleteBtn.className.replace('hidden', '').trim();
+        }
+
+        const tabsContainer = tabsList.closest('[data-tabs-root]') || tabsList.parentElement;
+        if (tabsContainer) {
+          const allContents = tabsContainer.querySelectorAll('[data-tabs-content]');
+          allContents.forEach(content => {
+            content.setAttribute('data-state', 'inactive');
+          });
+          const thisContent = tabsContainer.querySelector(`[data-value="team-${team.id}"][data-tabs-content]`);
+          if (thisContent) {
+            thisContent.setAttribute('data-state', 'active');
+          }
+        }
+      });
+
+      // Insert the tab
+      const buttonContainer = tabsList.querySelector('div.ml-auto');
+      if (buttonContainer) {
+        tabsList.insertBefore(tabTrigger, buttonContainer);
+      } else {
+        tabsList.prepend(tabTrigger);
+      }
+
+      // Insert the content
+      const tabsContainer = tabsList.parentElement;
+      if (tabsContainer) {
+        tabsContainer.appendChild(tabContent);
+        setTimeout(() => renderChart(team.id), 200);
+      }
+    }
+
+    async function updateTeamBalanceUI(teamId: string, newBalance: number) {
+      // Update the displayed balance
+      const balanceElement = document.querySelector(`[data-value="team-${teamId}"] .text-green-400`);
+      if (balanceElement) {
+        balanceElement.textContent = Number(newBalance).toLocaleString();
+      }
+      
+      // Update the chart
+      setTimeout(() => renderChart(teamId), 200);
+    }
+
     async function renderTeamTabs() {
       const result = await getTeams();
 
@@ -254,11 +646,12 @@
         deleteButton.addEventListener('click', async (e) => {
           e.stopPropagation(); // Prevent tab switching
 
-          if (confirm(`Are you sure you want to delete the team "${team.name}"?`)) {
+          if (confirm(`Estás seguro de que quieres borrar el equipo "${team.name}"?`)) {
             const result = await deleteTeam(team.id);
             if (result.success) {
-              alert('Team deleted successfully!');
-              await renderTeamTabs(); // Refresh the team tabs
+              alert('Equipo borrado!');
+              // Refresh the teams and re-initialize handlers
+              await renderTeamTabs();
             } else {
               alert(`Error deleting team: ${result.error}`);
             }
@@ -281,10 +674,18 @@
           tabContent.setAttribute('data-state', 'inactive');
         }
 
-        tabContent.className = 'mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=inactive]:hidden';
+        tabContent.className = 'w-full mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=inactive]:hidden';
         tabContent.innerHTML = `
-      <div class="p-4 bg-neutral-700 rounded-lg">
-        <p class="text-neutral-400">Budget: <span class="text-green-400 font-bold">$${team.balance}</span></p>
+      <div class="p-4 bg-neutral-700 rounded-lg w-full space-y-4">
+        <div class="flex justify-between items-center">
+          <p class="text-neutral-400 text-2xl"><span class="text-green-400 font-bold text-2xl">${Number(team.balance).toLocaleString()}</span>  €</p>
+        </div>
+        <div class="bg-neutral-600 p-4 rounded-lg">
+          <h3 class="text-neutral-200 text-lg font-semibold mb-3">Historial de Presupuesto</h3>
+          <div class="h-64 w-full">
+            <canvas id="chart-${team.id}" class="w-full h-full"></canvas>
+          </div>
+        </div>
       </div>
     `;
 
@@ -292,6 +693,9 @@
         const tabsContainer = tabsList.parentElement;
         if (tabsContainer) {
           tabsContainer.appendChild(tabContent);
+          
+          // Render chart after content is added to DOM
+          setTimeout(() => renderChart(team.id), 200);
         }
 
         // Add click event listener to make it interactive
@@ -339,62 +743,110 @@
         // Insert at the beginning (this will reverse the order)
         // So we insert each new tab after the previously inserted one
         const lastTeamTab = tabsList.querySelector('[data-team-tab]:last-of-type');
-        const dialogTrigger = tabsList.querySelector('button')?.closest('[data-dialog-trigger]') || tabsList.querySelector('button')?.parentElement;
+        const buttonContainer = tabsList.querySelector('div.ml-auto');
 
         if (lastTeamTab) {
           // Insert after the last team tab
           lastTeamTab.insertAdjacentElement('afterend', tabTrigger);
-        } else if (dialogTrigger) {
-          // First tab - insert before the add button
-          tabsList.insertBefore(tabTrigger, dialogTrigger);
+        } else if (buttonContainer) {
+          // First tab - insert before the button container
+          tabsList.insertBefore(tabTrigger, buttonContainer);
         } else {
           tabsList.prepend(tabTrigger);
         }
       });
     }
 
-      function handleFormSubmit() {
-        const form = document.querySelector("#añadir-equipo-form") as HTMLFormElement;
-
-        if (form) {
-          form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-      const name = formData.get('name') as string;
-      const balanceStr = formData.get('balance') as string;
-      const balance = balanceStr ? parseFloat(balanceStr) : 0;
-
-      if (!name?.trim()) {
-        alert('Por favor introduce el nombre del equipo');
-        return;
-      }
-
-      if (balance < 0) {
-        alert('El presupuesto no puede ser negativo!');
-        return;
-      }
-
-      const result = await createTeam(name.trim(), balance);
-
-      if (result.success) {
-      alert('Equipo creado!');
-      form.reset();
-      await renderTeamTabs(); // Refresh the team tabs
-      // Close dialog or refresh teams list
-    } else {
-      alert(`Error creando equipo: ${result.error}`);
-    }
-    });
+      function getSelectedTeamId(): string | null {
+        const activeTab = document.querySelector('[data-tabs-trigger][data-state="active"]');
+        if (activeTab) {
+          const dataValue = activeTab.getAttribute('data-value');
+          if (dataValue && dataValue.startsWith('team-')) {
+            return dataValue.replace('team-', '');
+          }
         }
+        return null;
       }
 
+      // Use event delegation for both forms
+      document.addEventListener('submit', async (e) => {
+        const target = e.target as HTMLElement;
+        
+        // Handle team creation form
+        if (target && target.id === 'añadir-equipo-form') {
+          e.preventDefault();
+          const form = target as HTMLFormElement;
+          const formData = new FormData(form);
+          const name = formData.get('name') as string;
+          const balanceStr = formData.get('balance') as string;
+          const balance = balanceStr ? parseFloat(balanceStr) : 0;
 
-      handleFormSubmit();
-      document.addEventListener("astro:after-swap", handleFormSubmit);
+          if (!name?.trim()) {
+            alert('Por favor introduce el nombre del equipo');
+            return;
+          }
 
+          if (balance < 0) {
+            alert('El presupuesto no puede ser negativo!');
+            return;
+          }
+
+          const result = await createTeam(name.trim(), balance);
+
+          if (result.success) {
+            alert('Equipo creado!');
+            form.reset();
+            // Just add the new team without rebuilding everything
+            if (result.data && result.data[0]) {
+              await addNewTeamTab(result.data[0]);
+            }
+          } else {
+            alert(`Error creando equipo: ${result.error}`);
+          }
+        }
+        
+        // Handle balance change form
+        else if (target && target.id === 'cambiar-balance-form') {
+          e.preventDefault();
+          const form = target as HTMLFormElement;
+          const formData = new FormData(form);
+          const amountStr = formData.get('new-balance') as string;
+          const amount = parseFloat(amountStr);
+
+          if (isNaN(amount)) {
+            alert('Por favor introduce una cantidad válida');
+            return;
+          }
+
+          if (amount === 0) {
+            alert('La cantidad no puede ser cero');
+            return;
+          }
+
+          const selectedTeamId = getSelectedTeamId();
+          if (!selectedTeamId) {
+            alert('Por favor selecciona un equipo primero');
+            return;
+          }
+
+          const result = await updateTeamBalance(selectedTeamId, amount);
+
+          if (result.success) {
+            const action = amount >= 0 ? 'añadido' : 'restado';
+            alert(`${Math.abs(amount)} ${action} al presupuesto!`);
+            form.reset();
+            // Just update the specific team's balance and chart
+            if (result.data && result.data[0] && result.data[0].new_balance !== undefined) {
+              await updateTeamBalanceUI(selectedTeamId, result.data[0].new_balance);
+            }
+          } else {
+            alert(`Error actualizando presupuesto: ${result.error}`);
+          }
+        }
+      });
+
+
+      // Initialize teams on page load
       document.addEventListener('DOMContentLoaded', renderTeamTabs);
-      document.addEventListener("astro:after-swap", () => {
-      handleFormSubmit();
-      renderTeamTabs();
-    });
+      document.addEventListener("astro:after-swap", renderTeamTabs);
     </script>
