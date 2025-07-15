@@ -20,7 +20,7 @@ import { Button } from "@/components/starwind/button";
 ---
 
 <Tabs defaultValue="" class="w-full flex flex-col justify-start items-start bg-neutral-800 p-5 rounded-xl max-[780px]:rounded-3xl">
-  <TabsList class="tabs-list w-full flex justify-start items-start bg-neutral-800">
+  <TabsList class="tabs-list w-full flex justify-start items-center bg-neutral-800">
     <DialogTrigger for="añadir-equipo" asChild>
       <Button>Añadir equipo</Button>
     </DialogTrigger>
@@ -171,21 +171,59 @@ import { Button } from "@/components/starwind/button";
     const existingTeamTabs = tabsList.querySelectorAll('[data-team-tab]');
     existingTeamTabs.forEach(tab => tab.remove());
 
+    // Remove existing team content
+    const existingTeamContent = document.querySelectorAll('[data-tabs-content][data-team-content]');
+    existingTeamContent.forEach(content => content.remove());
+
     const addButton = tabsList.querySelector('[data-dialog-trigger]') || tabsList.querySelector('button') || tabsList.lastElementChild;
 
-    result.data.forEach((team: any) => {
+    result.data.forEach((team: any, index: number) => {
       // Create the TabsTrigger element with correct Starwind classes
       const tabTrigger = document.createElement('button');
-      tabTrigger.className = 'max-w-[200px] w-auto starwind-transition-colors inline-flex grow items-center justify-center rounded-sm px-3 py-1.5 font-medium whitespace-nowrap data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm focus-visible:outline-outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50';
+      tabTrigger.className = 'w-min starwind-transition-colors mr-3 inline-flex items-center justify-center rounded-sm px-3 py-3 font-medium whitespace-nowrap data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm focus-visible:outline-outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50';
 
       tabTrigger.setAttribute('data-tabs-trigger', '');
       tabTrigger.setAttribute('data-value', `team-${team.id}`);
-      tabTrigger.setAttribute('data-state', 'inactive');
+
+      // Set first team as active by default
+      if (index === 0) {
+        tabTrigger.setAttribute('data-state', 'active');
+        tabTrigger.setAttribute('aria-selected', 'true');
+      } else {
+        tabTrigger.setAttribute('data-state', 'inactive');
+        tabTrigger.setAttribute('aria-selected', 'false');
+      }
+
       tabTrigger.setAttribute('data-team-tab', 'true');
       tabTrigger.setAttribute('role', 'tab');
-      tabTrigger.setAttribute('aria-selected', 'false');
       tabTrigger.setAttribute('type', 'button');
       tabTrigger.textContent = team.name;
+
+      // Create TabsContent for this team
+      const tabContent = document.createElement('div');
+      tabContent.setAttribute('data-tabs-content', '');
+      tabContent.setAttribute('data-value', `team-${team.id}`);
+      tabContent.setAttribute('data-team-content', 'true');
+
+      // Set first team content as active by default
+      if (index === 0) {
+        tabContent.setAttribute('data-state', 'active');
+      } else {
+        tabContent.setAttribute('data-state', 'inactive');
+      }
+
+      tabContent.className = 'mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=inactive]:hidden';
+      tabContent.innerHTML = `
+    <div class="p-4 bg-neutral-700 rounded-lg">
+      <p class="text-neutral-400">Budget: <span class="text-green-400 font-bold">$${team.balance}</span></p>
+    </div>
+  `;
+
+      // Insert TabsContent after TabsList
+      const tabsContainer = tabsList.parentElement;
+      if (tabsContainer) {
+        tabsContainer.appendChild(tabContent);
+      }
 
       // Add click event listener to make it interactive
       tabTrigger.addEventListener('click', () => {
@@ -201,29 +239,37 @@ import { Button } from "@/components/starwind/button";
         tabTrigger.setAttribute('aria-selected', 'true');
 
         // Hide all tab contents
-        const tabsContainer = tabsList.closest('[data-tabs-root]');
+        const tabsContainer = tabsList.closest('[data-tabs-root]') || tabsList.parentElement;
         if (tabsContainer) {
           const allContents = tabsContainer.querySelectorAll('[data-tabs-content]');
           allContents.forEach(content => {
             content.setAttribute('data-state', 'inactive');
           });
+
+          // Show this team's content
+          const thisContent = tabsContainer.querySelector(`[data-value="team-${team.id}"][data-tabs-content]`);
+          if (thisContent) {
+            thisContent.setAttribute('data-state', 'active');
+          }
         }
 
-        // Show corresponding content (you'll need to create TabsContent for each team)
-        // For now, just log the selected team
         console.log('Selected team:', team.name);
       });
 
-      // Insert before the add button
+      // Insert at the beginning (this will reverse the order)
+      // So we insert each new tab after the previously inserted one
+      const lastTeamTab = tabsList.querySelector('[data-team-tab]:last-of-type');
       const dialogTrigger = tabsList.querySelector('button')?.closest('[data-dialog-trigger]') || tabsList.querySelector('button')?.parentElement;
 
-  // Insert before the DialogTrigger wrapper
-  if (dialogTrigger && dialogTrigger.parentElement === tabsList) {
-    tabsList.insertBefore(tabTrigger, dialogTrigger);
-  } else {
-    // Fallback to prepend (add at beginning)
-    tabsList.prepend(tabTrigger);
-  }
+      if (lastTeamTab) {
+        // Insert after the last team tab
+        lastTeamTab.insertAdjacentElement('afterend', tabTrigger);
+      } else if (dialogTrigger) {
+        // First tab - insert before the add button
+        tabsList.insertBefore(tabTrigger, dialogTrigger);
+      } else {
+        tabsList.prepend(tabTrigger);
+      }
     });
   }
 
