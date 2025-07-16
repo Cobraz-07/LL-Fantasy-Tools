@@ -40,6 +40,6 @@ const display_name = data?.user?.user_metadata?.display_name;
 <Layout title="panel de control">
   <div class="overflow-y-hidden flex flex-col items-center justify-between max-w-[1800px] shadow-lg min-[780px]:mx-[10%] max-[780px]:my-5 max-[780px]:w-9/10 w-[80%]">
     <h1 class="self-start m-10 ml-[2%] mt-0 text-neutral-200 text-5xl">Hola, {display_name}</h1>
-    <TeamManager client:load />
+    <TeamManager />
   </div>
 </Layout>
