@@ -20,13 +20,19 @@
 ---
 
   <Tabs defaultValue="" class="w-full flex flex-col justify-start items-start bg-neutral-800 p-5 rounded-xl max-[780px]:rounded-3xl">
-    <TabsList class="tabs-list w-full flex justify-start items-center bg-neutral-800">
+    <TabsList class="tabs-list w-full flex justify-start items-center bg-neutral-800 max-[780px]:overflow-x-scroll overflow-y-hidden custom-scrollbar">
       <div class="ml-auto flex">
         <DialogTrigger for="añadir-equipo" asChild>
           <Button>Añadir equipo</Button>
         </DialogTrigger>
         <DialogTrigger for="cambiar-balance" asChild>
           <Button id="cambiar-balance-btn" class="ml-3">Cambiar presupuesto</Button>
+        </DialogTrigger>
+        <DialogTrigger for="confirmar-borrar" asChild>
+          <Button id="hidden-delete-trigger" class="hidden">Delete</Button>
+        </DialogTrigger>
+        <DialogTrigger for="notification-dialog" asChild>
+          <Button id="hidden-notification-trigger" class="hidden">Notification</Button>
         </DialogTrigger>
       </div>
     </TabsList>
@@ -86,6 +92,41 @@
     </DialogContent>
   </Dialog>
 
+  <Dialog id="confirmar-borrar">
+    <DialogContent class="sm:max-w-[450px]" animationDuration={200}>
+      <DialogHeader>
+        <DialogTitle class="text-neutral-200">Confirmar eliminación</DialogTitle>
+        <DialogDescription id="confirm-message">
+          ¿Estás seguro de que quieres borrar este equipo?
+        </DialogDescription>
+      </DialogHeader>
+      <DialogFooter>
+        <DialogClose asChild>
+          <Button type="button" variant="outline" class="text-neutral-200">Cancelar</Button>
+        </DialogClose>
+        <DialogClose asChild>
+          <Button id="confirm-delete-btn" type="button" variant="error">Borrar equipo</Button>
+        </DialogClose>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+
+  <Dialog id="notification-dialog">
+    <DialogContent class="sm:max-w-[400px]" animationDuration={200}>
+      <DialogHeader>
+        <DialogTitle class="text-neutral-200">Alerta</DialogTitle>
+        <DialogDescription id="notification-message">
+          Mensaje de notificación
+        </DialogDescription>
+      </DialogHeader>
+      <DialogFooter>
+        <DialogClose asChild>
+          <Button type="button" class="w-full mt-2">OK</Button>
+        </DialogClose>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+
   <script>
       import { createClient } from '@supabase/supabase-js';
       import Chart from 'chart.js/auto';
@@ -96,6 +137,20 @@
         import.meta.env.PUBLIC_SUPABASE_URL,
         import.meta.env.PUBLIC_SUPABASE_ANON_KEY
       );
+
+      // Custom error notification function to replace alert()
+      function showNotification(message: string) {
+        const messageEl = document.getElementById('notification-message');
+        const trigger = document.getElementById('hidden-notification-trigger');
+        
+        if (messageEl && trigger) {
+          // Set error message
+          messageEl.textContent = message;
+          
+          // Open the dialog
+          trigger.click();
+        }
+      }
 
       async function createTeam(name: string, balance: number = 0) {
       try {
@@ -422,6 +477,10 @@
           options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: {
+              intersect: false,
+              mode: 'index'
+            },
             scales: {
               y: {
                 beginAtZero: true,
@@ -435,7 +494,8 @@
               x: {
                 ticks: {
                   color: '#a3a3a3',
-                  maxRotation: 45
+                  maxRotation: 45,
+                  minRotation: 0
                 },
                 grid: {
                   color: '#525252'
@@ -495,14 +555,24 @@
 
       deleteButton.addEventListener('click', async (e) => {
         e.stopPropagation();
-        if (confirm(`Estás seguro de que quieres borrar el equipo "${team.name}"?`)) {
-          const result = await deleteTeam(team.id);
-          if (result.success) {
-            alert('Equipo borrado!');
-            await renderTeamTabs();
-          } else {
-            alert(`Error deleting team: ${result.error}`);
-          }
+        
+        // Set up custom confirmation dialog
+        const confirmMessage = document.getElementById('confirm-message');
+        if (confirmMessage) {
+          confirmMessage.textContent = `¿Estás seguro de que quieres borrar el equipo "${team.name}"?`;
+        }
+        
+        // Store team info for confirmation
+        const confirmBtn = document.getElementById('confirm-delete-btn');
+        if (confirmBtn) {
+          confirmBtn.setAttribute('data-team-id', team.id);
+          confirmBtn.setAttribute('data-team-name', team.name);
+        }
+        
+        // Open custom dialog instead of blocking confirm
+        const hiddenTrigger = document.getElementById('hidden-delete-trigger');
+        if (hiddenTrigger) {
+          hiddenTrigger.click();
         }
       });
 
@@ -524,8 +594,10 @@
           </div>
           <div class="bg-neutral-600 p-4 rounded-lg">
             <h3 class="text-neutral-200 text-lg font-semibold mb-3">Historial de Presupuesto</h3>
-            <div class="h-64 w-full">
-              <canvas id="chart-${team.id}" class="w-full h-full"></canvas>
+            <div class="h-64 w-full overflow-x-auto">
+              <div class="min-w-[600px] h-full max-[780px]:min-w-[800px]">
+                <canvas id="chart-${team.id}" class="w-full h-full"></canvas>
+              </div>
             </div>
           </div>
         </div>
@@ -646,15 +718,23 @@
         deleteButton.addEventListener('click', async (e) => {
           e.stopPropagation(); // Prevent tab switching
 
-          if (confirm(`Estás seguro de que quieres borrar el equipo "${team.name}"?`)) {
-            const result = await deleteTeam(team.id);
-            if (result.success) {
-              alert('Equipo borrado!');
-              // Refresh the teams and re-initialize handlers
-              await renderTeamTabs();
-            } else {
-              alert(`Error deleting team: ${result.error}`);
-            }
+          // Set up custom confirmation dialog
+          const confirmMessage = document.getElementById('confirm-message');
+          if (confirmMessage) {
+            confirmMessage.textContent = `¿Estás seguro de que quieres borrar el equipo "${team.name}"?`;
+          }
+          
+          // Store team info for confirmation
+          const confirmBtn = document.getElementById('confirm-delete-btn');
+          if (confirmBtn) {
+            confirmBtn.setAttribute('data-team-id', team.id);
+            confirmBtn.setAttribute('data-team-name', team.name);
+          }
+          
+          // Open custom dialog instead of blocking confirm
+          const hiddenTrigger = document.getElementById('hidden-delete-trigger');
+          if (hiddenTrigger) {
+            hiddenTrigger.click();
           }
         });
 
@@ -682,8 +762,10 @@
         </div>
         <div class="bg-neutral-600 p-4 rounded-lg">
           <h3 class="text-neutral-200 text-lg font-semibold mb-3">Historial de Presupuesto</h3>
-          <div class="h-64 w-full">
-            <canvas id="chart-${team.id}" class="w-full h-full"></canvas>
+          <div class="h-64 w-full overflow-x-auto">
+            <div class="min-w-[600px] h-full max-[780px]:min-w-[800px]">
+              <canvas id="chart-${team.id}" class="w-full h-full"></canvas>
+            </div>
           </div>
         </div>
       </div>
@@ -770,6 +852,9 @@
 
       // Use event delegation for both forms
       document.addEventListener('submit', async (e) => {
+        // Arc browser compatibility - ensure event is properly handled
+        if (!e || !e.target) return;
+        
         const target = e.target as HTMLElement;
         
         // Handle team creation form
@@ -782,26 +867,34 @@
           const balance = balanceStr ? parseFloat(balanceStr) : 0;
 
           if (!name?.trim()) {
-            alert('Por favor introduce el nombre del equipo');
+            showNotification('Por favor introduce el nombre del equipo');
             return;
           }
 
           if (balance < 0) {
-            alert('El presupuesto no puede ser negativo!');
+            showNotification('El presupuesto no puede ser negativo!');
             return;
           }
 
           const result = await createTeam(name.trim(), balance);
 
           if (result.success) {
-            alert('Equipo creado!');
+            // Arc browser compatibility - force form reset
+            const inputs = form.querySelectorAll('input');
+            inputs.forEach(input => input.value = '');
             form.reset();
+            
+            // Force input focus release for Arc browser
+            if (document.activeElement && document.activeElement instanceof HTMLElement) {
+              document.activeElement.blur();
+            }
+            
             // Just add the new team without rebuilding everything
             if (result.data && result.data[0]) {
-              await addNewTeamTab(result.data[0]);
+              addNewTeamTab(result.data[0]); // Remove await to prevent UI blocking
             }
           } else {
-            alert(`Error creando equipo: ${result.error}`);
+            showNotification(`Error creando equipo: ${result.error}`);
           }
         }
         
@@ -814,39 +907,91 @@
           const amount = parseFloat(amountStr);
 
           if (isNaN(amount)) {
-            alert('Por favor introduce una cantidad válida');
+            showNotification('Por favor introduce una cantidad válida');
             return;
           }
 
           if (amount === 0) {
-            alert('La cantidad no puede ser cero');
+            showNotification('La cantidad no puede ser cero');
             return;
           }
 
           const selectedTeamId = getSelectedTeamId();
           if (!selectedTeamId) {
-            alert('Por favor selecciona un equipo primero');
+            showNotification('Por favor selecciona un equipo primero');
             return;
           }
 
           const result = await updateTeamBalance(selectedTeamId, amount);
 
           if (result.success) {
-            const action = amount >= 0 ? 'añadido' : 'restado';
-            alert(`${Math.abs(amount)} ${action} al presupuesto!`);
+            // Arc browser compatibility - force form reset
+            const inputs = form.querySelectorAll('input');
+            inputs.forEach(input => input.value = '');
             form.reset();
+            
+            // Force input focus release for Arc browser
+            if (document.activeElement && document.activeElement instanceof HTMLElement) {
+              document.activeElement.blur();
+            }
+            
             // Just update the specific team's balance and chart
             if (result.data && result.data[0] && result.data[0].new_balance !== undefined) {
-              await updateTeamBalanceUI(selectedTeamId, result.data[0].new_balance);
+              updateTeamBalanceUI(selectedTeamId, result.data[0].new_balance); // Remove await to prevent UI blocking
             }
           } else {
-            alert(`Error actualizando presupuesto: ${result.error}`);
+            showNotification(`Error actualizando presupuesto: ${result.error}`);
           }
         }
       });
 
+      // Handle custom confirmation dialog
+      document.addEventListener('click', async (e) => {
+        const target = e.target as HTMLElement;
+        
+        if (target && target.id === 'confirm-delete-btn') {
+          const teamId = target.getAttribute('data-team-id');
+          const teamName = target.getAttribute('data-team-name');
+          
+          if (teamId) {
+            const result = await deleteTeam(teamId);
+            if (result.success) {
+              renderTeamTabs(); // Remove await to prevent UI blocking
+            } else {
+              showNotification(`Error deleting team: ${result.error}`);
+            }
+          }
+        }
+      });
 
       // Initialize teams on page load
       document.addEventListener('DOMContentLoaded', renderTeamTabs);
       document.addEventListener("astro:after-swap", renderTeamTabs);
     </script>
+
+<style>
+  .custom-scrollbar::-webkit-scrollbar {
+    height: 6px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #404040;
+    border-radius: 3px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #525252;
+    border-radius: 3px;
+    transition: background 0.2s ease;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #737373;
+  }
+  
+  /* Firefox */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #525252 #404040;
+  }
+</style>
