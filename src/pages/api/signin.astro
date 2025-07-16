@@ -1,0 +1,27 @@
+---
+import Layout from "src/layouts/Layout.astro";
+import { Input } from "@/components/starwind/input";
+import { Button } from "@/components/starwind/button";
+import { Label } from "@/components/starwind/label";
+
+const { cookies, redirect } = Astro;
+
+const accessToken = cookies.get("sb-access-token");
+const refreshToken = cookies.get("sb-refresh-token");
+
+if (accessToken && refreshToken) {
+  return redirect("/dashboard");
+}
+---
+
+<Layout title="Sign in">
+    <div class="flex flex-col items-center justify-center bg-neutral-900 p-5  w-auto max-[780px]:w-full min-[780px]:min-w-150  m-auto">
+        <form action="/api/auth/signin" method="post" class="bg-neutral-800 w-full p-8 rounded-xl shadow-lg max-w-md flex flex-col">
+            <Label class="text-neutral-200" for="email">Email</Label>
+            <Input class="mb-4 mt-2 bg-neutral-700 text-neutral-200" type="email" name="email" id="email" />
+            <Label class="text-neutral-200" for="password">Password</Label>
+            <Input class="mb-4 mt-2 bg-neutral-700 text-neutral-200" type="password" name="password" id="password" />
+            <Button class="mt-10 text-neutral-200" variant="signIn" type="submit">Iniciar sesión</Button>
+        </form>
+    </div>
+</Layout>

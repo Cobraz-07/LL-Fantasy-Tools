@@ -1,0 +1,45 @@
+---
+import Layout from "../layouts/SignedInLayout.astro";
+import { supabase } from "../lib/supabase";
+import TeamManager from "../components/teammanager.astro";
+
+const { cookies, redirect } = Astro;
+
+// 1. Check tokens
+const accessToken = cookies.get("sb-access-token")?.value;
+const refreshToken = cookies.get("sb-refresh-token")?.value;
+
+if (!accessToken || !refreshToken) {
+  return redirect("/api/signin");
+}
+
+// 2. Restore session
+const { data, error } = await supabase.auth.setSession({
+  refresh_token: refreshToken,
+  access_token: accessToken,
+});
+
+// 3. Handle session error
+if (error) {
+  cookies.delete("sb-access-token", { path: "/" });
+  cookies.delete("sb-refresh-token", { path: "/" });
+  return redirect("/signin");
+}
+
+// 4. Verify user exists
+if (!data?.user) {
+  return redirect("/api/signin");
+}
+
+// Debugging
+console.log("Loaded user:", data.user.id);
+
+const display_name = data?.user?.user_metadata?.display_name;
+---
+
+<Layout title="panel de control">
+  <div class="overflow-y-hidden flex flex-col items-center justify-between max-w-[1800px] shadow-lg min-[780px]:mx-[10%] max-[780px]:my-5 max-[780px]:w-9/10 w-[80%]">
+    <h1 class="self-start m-10 ml-[2%] mt-0 text-neutral-200 text-5xl">Hola, {display_name}</h1>
+    <TeamManager />
+  </div>
+</Layout>

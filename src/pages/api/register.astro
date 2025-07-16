@@ -1,0 +1,20 @@
+---
+import Layout from "src/layouts/Layout.astro";
+import { Input } from "@/components/starwind/input";
+import { Button } from "@/components/starwind/button";
+import { Label } from "@/components/starwind/label";
+---
+
+<Layout title="Register">
+    <div class="flex flex-col items-center justify-center bg-neutral-900 p-5 max-[780px]:w-full w-auto min-[780px]:min-w-150  m-auto">
+        <form id="registerForm" action="/api/auth/register" method="post" class="bg-neutral-800 p-8 rounded-xl shadow-lg w-full max-w-md flex flex-col">
+            <Label class="text-neutral-200" for="username">Username</Label>
+            <Input class="mb-4 mt-2 bg-neutral-700 text-neutral-200" type="text" name="username" id="username" required />
+            <Label class="text-neutral-200" for="email">Email</Label>
+            <Input class="mb-4 mt-2 bg-neutral-700 text-neutral-200" type="email" name="email" id="email" required />
+            <Label class="text-neutral-200" for="password">Password</Label>
+            <Input class="mb-4 mt-2 bg-neutral-700 text-neutral-200" type="password" name="password" id="password" required />
+            <Button class="mt-10 text-neutral-200" variant="signUp" type="submit">Registrarse</Button>
+        </form>
+    </div>
+</Layout>
