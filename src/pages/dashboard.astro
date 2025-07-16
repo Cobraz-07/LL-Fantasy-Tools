@@ -39,7 +39,12 @@ const display_name = data?.user?.user_metadata?.display_name;
 
 <Layout title="panel de control">
   <div class="overflow-y-hidden flex flex-col items-center justify-between max-w-[1800px] shadow-lg min-[780px]:mx-[10%] max-[780px]:my-5 max-[780px]:w-9/10 w-[80%]">
-    <h1 class="self-start m-10 ml-[2%] mt-0 text-neutral-200 text-5xl">Hola, {display_name}</h1>
+    <div class="flex max-[780px]:flex-col min-[780px]:justify-between items-start justify-start w-full">
+      <h1 class="self-start m-10 ml-[2%] mt-0 text-neutral-200 text-5xl">Hola, {display_name}</h1> 
+      <div class="self-start m-10 mr-0 ml-[-28px] mt-0 scale-75">
+		    <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="Cobraz07" data-color="#FFDD00" data-emoji="☕"  data-font="Lato" data-text="Cómprame un café" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff" ></script>
+	    </div>
+    </div>
     <TeamManager />
   </div>
 </Layout>
